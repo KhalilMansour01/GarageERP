@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="PROJECT_STRUCTURE.md" />
+  </Folder>
+  <Project Path="GarageERP.Application/GarageERP.Application.csproj" />
+  <Project Path="GarageERP.Domain/GarageERP.Domain.csproj" />
+  <Project Path="GarageERP.Infrastructure/GarageERP.Infrastructure.csproj" />
+  <Project Path="GarageERP.Wpf/GarageERP.Wpf.csproj" />
+</Solution>
