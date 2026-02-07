@@ -11,7 +11,7 @@ public class Customer
     public string Name { get; set; } = "";
     public string Phone { get; set; } = "";
     public string Email { get; set; } = "";
-    public decimal Balance { get; set; }
-
-    public List<Vehicle> Vehicles { get; set; } = new();
+    public decimal Balance { get; set; } = 0m;
+    public bool isActive { get; set; } = true;
+    // public List<Vehicle> Vehicles { get; set; } = new();
 }
