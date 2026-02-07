@@ -81,27 +81,22 @@ public class ContractService
     }
 
     // UPDATE (no vehicle change)
-    public async Task UpdateAsync(
-        int id,
-        DateTime expDate,
-        int discount,
-        int status,
-        string? description)
+    public async Task UpdateAsync(Contract contract)
     {
-        var contract = await GetByIdAsync(id);
+        var existing = await GetByIdAsync(contract.Id);
 
-        if (contract.DateIssued > expDate)
+        if (existing.DateIssued > existing.ExpDate)
             throw new Exception("Expiration date cannot be before issue date");
 
-        if (discount < 0 || discount > 100)
+        if (existing.Discount < 0 || existing.Discount > 100)
             throw new Exception("Discount must be between 0 and 100");
 
-        contract.ExpDate = expDate;
-        contract.Discount = discount;
-        contract.Status = status;
-        contract.Description = description?.Trim() ?? "";
+        existing.ExpDate = contract.ExpDate;
+        existing.Discount = contract.Discount;
+        existing.Status = contract.Status;
+        existing.Description = contract.Description?.Trim() ?? "";
 
-        await _contractRepo.UpdateAsync(contract);
+        await _contractRepo.UpdateAsync(existing);
     }
 
     // DELETE (hard delete)

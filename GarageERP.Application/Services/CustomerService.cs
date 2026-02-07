@@ -51,22 +51,22 @@ public class CustomerService
     }
 
     // UPDATE
-    public async Task UpdateAsync(int id, string name, string phone, string? email, int type)
+    public async Task UpdateAsync(Customer customer)
     {
-        var customer = await GetByIdAsync(id);
+        var existing = await GetByIdAsync(customer.Id);
 
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(customer.Name))
             throw new Exception("Customer name is required");
 
-        if (string.IsNullOrWhiteSpace(phone))
+        if (string.IsNullOrWhiteSpace(customer.Phone))
             throw new Exception("Phone number is required");
 
-        customer.Name = name.Trim();
-        customer.Phone = phone.Trim();
-        customer.Email = email?.Trim() ?? "";
-        customer.Type = type;
+        existing.Name = customer.Name.Trim();
+        existing.Phone = customer.Phone.Trim();
+        existing.Email = customer.Email?.Trim() ?? "";
+        existing.Type = customer.Type;
 
-        await _customerRepo.UpdateAsync(customer);
+        await _customerRepo.UpdateAsync(existing);
     }
 
     // DELETE
