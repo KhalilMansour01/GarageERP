@@ -1,4 +1,5 @@
 ﻿using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 public class VehicleService
 {

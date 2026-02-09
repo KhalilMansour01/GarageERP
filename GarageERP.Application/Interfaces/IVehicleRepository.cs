@@ -1,4 +1,6 @@
-﻿using GarageERP.Domain.Entities;
+﻿namespace GarageERP.Application.Interfaces;
+
+using GarageERP.Domain.Entities;
 
 public interface IVehicleRepository
 {

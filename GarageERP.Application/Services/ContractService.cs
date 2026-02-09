@@ -1,5 +1,6 @@
 ﻿using GarageERP.Domain.Constants;
 using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 public class ContractService
 {
