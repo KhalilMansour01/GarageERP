@@ -43,15 +43,15 @@ public partial class App : System.Windows.Application
             options.UseSqlite(Configuration!.GetConnectionString("DefaultConnection")));
 
         // Register Services
-        services.AddScoped<ICustomerService, CustomerService>();
-        services.AddScoped<IVehicleService, VehicleService>();
-        services.AddScoped<IContractService, ContractService>();
-        services.AddScoped<ISupplierService, SupplierService>();
-        services.AddScoped<IServiceService, ServiceService>();
-        services.AddScoped<IPartService, PartService>();
-        services.AddScoped<IPartsUsedService, PartsUsedService>();
-        services.AddScoped<IJobService, JobService>();
-        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<CustomerService>();
+        services.AddScoped<VehicleService>();
+        services.AddScoped<ContractService>();
+        services.AddScoped<SupplierService>();
+        services.AddScoped<ServiceService>();
+        services.AddScoped<PartService>();
+        // services.AddScoped<IPartsUsedService, PartsUsedService>();
+        services.AddScoped<JobService>();
+        services.AddScoped<InvoiceService>();
 
         // Register Windows
         services.AddTransient<MainWindow>();

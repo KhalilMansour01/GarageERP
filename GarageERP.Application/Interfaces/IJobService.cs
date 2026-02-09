@@ -2,7 +2,7 @@
 
 using GarageERP.Domain.Entities;
 
-public interface IJobRepository
+public interface IJobService
 {
     Task<Job?> GetByIdAsync(int id);
     Task<List<Job>> GetAllAsync();

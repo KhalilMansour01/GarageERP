@@ -5,12 +5,12 @@ namespace GarageERP.Application.Services;
 
 public class InvoiceService
 {
-    private readonly IInvoiceRepository _invoiceRepo;
-    private readonly IJobRepository _jobRepo;
+    private readonly IInvoiceService _invoiceRepo;
+    private readonly IJobService _jobRepo;
 
     public InvoiceService(
-        IInvoiceRepository invoiceRepo,
-        IJobRepository jobRepo)
+        IInvoiceService invoiceRepo,
+        IJobService jobRepo)
     {
         _invoiceRepo = invoiceRepo;
         _jobRepo = jobRepo;

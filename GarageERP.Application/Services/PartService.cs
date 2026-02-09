@@ -5,12 +5,12 @@ namespace GarageERP.Application.Services;
 
 public class PartService
 {
-    private readonly IPartRepository _partRepo;
-    private readonly ISupplierRepository _supplierRepo;
+    private readonly IPartService _partRepo;
+    private readonly ISupplierService _supplierRepo;
 
     public PartService(
-        IPartRepository partRepo,
-        ISupplierRepository supplierRepo)
+        IPartService partRepo,
+        ISupplierService supplierRepo)
     {
         _partRepo = partRepo;
         _supplierRepo = supplierRepo;

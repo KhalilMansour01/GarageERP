@@ -2,7 +2,7 @@
 
 using GarageERP.Domain.Entities;
 
-public interface IInvoiceRepository
+public interface IInvoiceService
 {
     Task<Invoice?> GetByIdAsync(int id);
     Task<List<Invoice>> GetAllAsync();

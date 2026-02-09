@@ -5,9 +5,9 @@ namespace GarageERP.Application.Services;
 
 public class SupplierService
 {
-    private readonly ISupplierRepository _supplierRepo;
+    private readonly ISupplierService _supplierRepo;
 
-    public SupplierService(ISupplierRepository supplierRepo)
+    public SupplierService(ISupplierService supplierRepo)
     {
         _supplierRepo = supplierRepo;
     }

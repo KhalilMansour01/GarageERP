@@ -2,7 +2,7 @@
 
 using GarageERP.Domain.Entities;
 
-public interface ISupplierRepository
+public interface ISupplierService
 {
     Task<Supplier?> GetByIdAsync(int id);
     Task<List<Supplier>> GetAllAsync();

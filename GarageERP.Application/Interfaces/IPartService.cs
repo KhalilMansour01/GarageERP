@@ -2,7 +2,7 @@
 
 using GarageERP.Domain.Entities;
 
-public interface IPartRepository
+public interface IPartService
 {
     Task<Part?> GetByIdAsync(int id);
     Task<List<Part>> GetAllAsync();

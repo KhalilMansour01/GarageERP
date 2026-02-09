@@ -5,12 +5,12 @@ namespace GarageERP.Application.Services;
 
 public class JobService
 {
-    private readonly IJobRepository _jobRepo;
+    private readonly IJobService _jobRepo;
     private readonly IVehicleRepository _vehicleRepo;
     private readonly IServiceRepository _serviceRepo;
 
     public JobService(
-        IJobRepository jobRepo,
+        IJobService jobRepo,
         IVehicleRepository vehicleRepo,
         IServiceRepository serviceRepo)
     {

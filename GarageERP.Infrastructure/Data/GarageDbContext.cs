@@ -2,6 +2,7 @@
 using GarageERP.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
+using Microsoft.Extensions.Configuration;
 
 namespace GarageERP.Infrastructure.Data;
 
@@ -9,6 +10,26 @@ public class GarageDbContext : DbContext
 {
     public GarageDbContext(DbContextOptions<GarageDbContext> options) : base(options)
     {
+    }
+
+    // Parameterless constructor for EF Core CLI (design-time)
+    public GarageDbContext() : base(CreateOptions())
+    {
+    }
+
+
+    private static DbContextOptions<GarageDbContext> CreateOptions()
+    {
+        // Build configuration (EF CLI will use this)
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        var optionsBuilder = new DbContextOptionsBuilder<GarageDbContext>();
+        optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection")); // or UseSqlServer
+
+        return optionsBuilder.Options;
     }
 
     public DbSet<Customer> Customers { get; set; }
