@@ -18,6 +18,13 @@ namespace GarageERP.Infrastructure.Persistence
         public DbSet<Customer> Customers => Set<Customer>();
         public DbSet<Vehicle> Vehicles => Set<Vehicle>();
         public DbSet<Contract> Contracts => Set<Contract>();
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+        public DbSet<Job> Jobs => Set<Job>();
+        public DbSet<Part> Parts => Set<Part>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<Service> Services => Set<Service>();
+        public DbSet<PartsUsed> PartsUsed => Set<PartsUsed>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
