@@ -26,6 +26,12 @@ namespace GarageERP.Infrastructure.Persistence
             modelBuilder.ApplyConfiguration(new CustomerConfig());
             modelBuilder.ApplyConfiguration(new VehicleConfig());
             modelBuilder.ApplyConfiguration(new ContractConfig());
+            modelBuilder.ApplyConfiguration(new InvoiceConfig());
+            modelBuilder.ApplyConfiguration(new JobConfig());
+            modelBuilder.ApplyConfiguration(new PartConfig());
+            modelBuilder.ApplyConfiguration(new SupplierConfig());
+            modelBuilder.ApplyConfiguration(new ServiceConfig());
+            modelBuilder.ApplyConfiguration(new PartsUsedConfig());
         }
     }
 }
