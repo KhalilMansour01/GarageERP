@@ -19,6 +19,7 @@ public class Vehicle
     public string UseType { get; set; } = "";
     public string EngineNumber { get; set; } = "";
     public string ChasisNumber { get; set; } = "";
+    public int Odometer { get; set; }
     public string Color { get; set; } = "";
     public string Shape { get; set; } = "";
     public int TrunkChar { get; set; } // unclear, keeping as int
@@ -30,7 +31,7 @@ public class Vehicle
     public int CargoWeight { get; set; }
     public int TotalWeight { get; set; }
 
-    public Customer? Customer { get; set; }
-    public List<Contract> Contracts { get; set; } = new();
-    public List<Job> Jobs { get; set; } = new();
+    // public Customer? Customer { get; set; }
+    // public List<Contract> Contracts { get; set; } = new();
+    // public List<Job> Jobs { get; set; } = new();
 }
