@@ -17,7 +17,7 @@ public class Contract
 
     public DateTime ExpDate { get; set; }
 
-    // 1 = Active, 2 = Closed
+    // 1 = Active, 2 = Closed, 3 = Expired
     public int Status { get; set; }
 
     public string Description { get; set; } = "";

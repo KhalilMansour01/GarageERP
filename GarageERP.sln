@@ -1,0 +1,53 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{996CEBED-A05B-5D42-3FF0-982E087A2599}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageERP.Application", "GarageERP.Application\GarageERP.Application.csproj", "{68C88E8F-704D-E83C-2967-77C708B11A3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageERP.Domain", "GarageERP.Domain\GarageERP.Domain.csproj", "{34D692F6-50EF-CE2A-DC85-807860FD1E40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageERP.Infrastructure", "GarageERP.Infrastructure\GarageERP.Infrastructure.csproj", "{D248323C-540B-D7D5-ED04-E0447187DB72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageERP.Wpf", "GarageERP.Wpf\GarageERP.Wpf.csproj", "{C59DC4F4-4FB4-9598-5D22-8AEBC5D02F2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarageERP.Domain", "Domain\GarageERP.Domain.csproj", "{1D6F0A32-116A-F90A-C827-6F131AF3D697}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68C88E8F-704D-E83C-2967-77C708B11A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C88E8F-704D-E83C-2967-77C708B11A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C88E8F-704D-E83C-2967-77C708B11A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C88E8F-704D-E83C-2967-77C708B11A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34D692F6-50EF-CE2A-DC85-807860FD1E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34D692F6-50EF-CE2A-DC85-807860FD1E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34D692F6-50EF-CE2A-DC85-807860FD1E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34D692F6-50EF-CE2A-DC85-807860FD1E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D248323C-540B-D7D5-ED04-E0447187DB72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D248323C-540B-D7D5-ED04-E0447187DB72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D248323C-540B-D7D5-ED04-E0447187DB72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D248323C-540B-D7D5-ED04-E0447187DB72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C59DC4F4-4FB4-9598-5D22-8AEBC5D02F2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C59DC4F4-4FB4-9598-5D22-8AEBC5D02F2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C59DC4F4-4FB4-9598-5D22-8AEBC5D02F2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C59DC4F4-4FB4-9598-5D22-8AEBC5D02F2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D6F0A32-116A-F90A-C827-6F131AF3D697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D6F0A32-116A-F90A-C827-6F131AF3D697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D6F0A32-116A-F90A-C827-6F131AF3D697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D6F0A32-116A-F90A-C827-6F131AF3D697}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1D6F0A32-116A-F90A-C827-6F131AF3D697} = {996CEBED-A05B-5D42-3FF0-982E087A2599}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {895C16F1-AE41-4D73-AF93-369D7C914AE7}
+	EndGlobalSection
+EndGlobal
