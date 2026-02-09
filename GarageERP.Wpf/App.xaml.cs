@@ -9,10 +9,10 @@ using GarageERP.Application.Services;
 
 namespace GarageERP.Wpf;
 
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
-    public IServiceProvider ServiceProvider { get; private set; }
-    public IConfiguration Configuration { get; private set; }
+    public IServiceProvider? ServiceProvider { get; private set; }
+    public IConfiguration? Configuration { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -40,7 +40,7 @@ public partial class App : Application
     {
         // Register DbContext
         services.AddDbContext<GarageDbContext>(options =>
-            options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlite(Configuration!.GetConnectionString("DefaultConnection")));
 
         // Register Services
         services.AddScoped<ICustomerService, CustomerService>();

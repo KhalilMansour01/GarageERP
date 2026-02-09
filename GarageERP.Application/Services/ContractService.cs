@@ -2,6 +2,8 @@
 using GarageERP.Domain.Entities;
 using GarageERP.Application.Interfaces;
 
+namespace GarageERP.Application.Services;
+
 public class ContractService
 {
     private readonly IContractRepository _contractRepo;

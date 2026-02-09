@@ -1,146 +1,103 @@
-﻿using GarageERP.Application.Interfaces;
-using GarageERP.Domain.Entities;
-using GarageERP.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 namespace GarageERP.Application.Services;
 
-public class InvoiceService : IInvoiceService
+public class InvoiceService
 {
-    private readonly GarageDbContext _context;
+    private readonly IInvoiceRepository _invoiceRepo;
+    private readonly IJobRepository _jobRepo;
 
-    public InvoiceService(GarageDbContext context)
+    public InvoiceService(
+        IInvoiceRepository invoiceRepo,
+        IJobRepository jobRepo)
     {
-        _context = context;
+        _invoiceRepo = invoiceRepo;
+        _jobRepo = jobRepo;
     }
 
-    // Basic CRUD
-    public async Task<IEnumerable<Invoice>> GetAllInvoicesAsync()
+    public async Task<Invoice> GetByIdAsync(int id)
     {
-        return await _context.Invoices
-            .Include(i => i.Jobs)
-                .ThenInclude(j => j.Service)
-            .Include(i => i.Jobs)
-                .ThenInclude(j => j.Vehicle)
-                    .ThenInclude(v => v.Customer)
-            .OrderByDescending(i => i.DateIssued)
-            .ToListAsync();
-    }
-
-    public async Task<Invoice?> GetInvoiceByIdAsync(int id)
-    {
-        return await _context.Invoices
-            .Include(i => i.Jobs)
-                .ThenInclude(j => j.Service)
-            .Include(i => i.Jobs)
-                .ThenInclude(j => j.Vehicle)
-                    .ThenInclude(v => v.Customer)
-            .FirstOrDefaultAsync(i => i.Id == id);
-    }
-
-    public async Task<Invoice> CreateInvoiceAsync(Invoice invoice)
-    {
-        invoice.DateIssued = DateTime.Now;
-        invoice.FinalPrice = await CalculateFinalPriceAsync(invoice.NetPrice, invoice.Discount);
-
-        _context.Invoices.Add(invoice);
-        await _context.SaveChangesAsync();
+        var invoice = await _invoiceRepo.GetByIdAsync(id);
+        if (invoice == null)
+            throw new Exception("Invoice does not exist");
         return invoice;
     }
 
-    public async Task<Invoice> UpdateInvoiceAsync(Invoice invoice)
+    public async Task<List<Invoice>> GetAllAsync()
     {
-        invoice.FinalPrice = await CalculateFinalPriceAsync(invoice.NetPrice, invoice.Discount);
-
-        _context.Invoices.Update(invoice);
-        await _context.SaveChangesAsync();
-        return invoice;
+        return await _invoiceRepo.GetAllAsync();
     }
 
-    public async Task<bool> DeleteInvoiceAsync(int id)
+    public async Task<List<Invoice>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        var invoice = await _context.Invoices.FindAsync(id);
-        if (invoice == null) return false;
-
-        _context.Invoices.Remove(invoice);
-        await _context.SaveChangesAsync();
-        return true;
+        return await _invoiceRepo.GetByDateRangeAsync(startDate, endDate);
     }
 
-    // Business Logic
-    public async Task<IEnumerable<Invoice>> GetInvoicesByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<List<Invoice>> GetByMonthAsync(int year, int month)
     {
-        return await _context.Invoices
-            .Where(i => i.DateIssued >= startDate && i.DateIssued <= endDate)
-            .Include(i => i.Jobs)
-                .ThenInclude(j => j.Service)
-            .OrderByDescending(i => i.DateIssued)
-            .ToListAsync();
+        return await _invoiceRepo.GetByMonthAsync(year, month);
     }
 
-    public async Task<IEnumerable<Invoice>> GetInvoicesByMonthAsync(int year, int month)
-    {
-        return await _context.Invoices
-            .Where(i => i.DateIssued.Year == year && i.DateIssued.Month == month)
-            .Include(i => i.Jobs)
-            .OrderByDescending(i => i.DateIssued)
-            .ToListAsync();
-    }
-
-    public Task<decimal> CalculateFinalPriceAsync(decimal netPrice, int discount)
+    public async Task AddAsync(decimal netPrice, int discount, List<int> jobIds)
     {
         if (discount < 0 || discount > 100)
-            discount = 0;
+            throw new Exception("Discount must be between 0 and 100");
 
-        var discountAmount = netPrice * (discount / 100m);
-        var finalPrice = netPrice - discountAmount;
-        return Task.FromResult(Math.Round(finalPrice, 2));
-    }
+        if (netPrice < 0)
+            throw new Exception("Net price cannot be negative");
 
-    public async Task<decimal> GetTotalRevenueAsync()
-    {
-        return await _context.Invoices
-            .SumAsync(i => i.FinalPrice);
-    }
-
-    public async Task<decimal> GetRevenueByDateRangeAsync(DateTime startDate, DateTime endDate)
-    {
-        return await _context.Invoices
-            .Where(i => i.DateIssued >= startDate && i.DateIssued <= endDate)
-            .SumAsync(i => i.FinalPrice);
-    }
-
-    public async Task<int> GetInvoiceCountByDateRangeAsync(DateTime startDate, DateTime endDate)
-    {
-        return await _context.Invoices
-            .CountAsync(i => i.DateIssued >= startDate && i.DateIssued <= endDate);
-    }
-
-    public async Task<Invoice> GenerateInvoiceFromJobsAsync(List<int> jobIds, int discount = 0)
-    {
-        var jobs = await _context.Jobs
-            .Where(j => jobIds.Contains(j.Id))
-            .Include(j => j.Service)
-            .ToListAsync();
-
-        if (!jobs.Any())
-            throw new InvalidOperationException("No jobs found with the provided IDs");
-
-        var netPrice = jobs.Sum(j => j.NetCost);
-        var finalPrice = await CalculateFinalPriceAsync(netPrice, discount);
+        var finalPrice = CalculateFinalPrice(netPrice, discount);
 
         var invoice = new Invoice
         {
             DateIssued = DateTime.Now,
             NetPrice = netPrice,
             Discount = discount,
-            FinalPrice = finalPrice,
-            Jobs = jobs
+            FinalPrice = finalPrice
         };
 
-        _context.Invoices.Add(invoice);
-        await _context.SaveChangesAsync();
+        await _invoiceRepo.AddAsync(invoice);
+    }
 
-        return invoice;
+    public async Task UpdateAsync(Invoice invoice)
+    {
+        var existing = await GetByIdAsync(invoice.Id);
+
+        if (invoice.Discount < 0 || invoice.Discount > 100)
+            throw new Exception("Discount must be between 0 and 100");
+
+        if (invoice.NetPrice < 0)
+            throw new Exception("Net price cannot be negative");
+
+        existing.NetPrice = invoice.NetPrice;
+        existing.Discount = invoice.Discount;
+        existing.FinalPrice = CalculateFinalPrice(invoice.NetPrice, invoice.Discount);
+
+        await _invoiceRepo.UpdateAsync(existing);
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        await GetByIdAsync(id);
+        await _invoiceRepo.DeleteAsync(id);
+    }
+
+    public decimal CalculateFinalPrice(decimal netPrice, int discount)
+    {
+        var discountAmount = netPrice * (discount / 100m);
+        return Math.Round(netPrice - discountAmount, 2);
+    }
+
+    public async Task<decimal> GetTotalRevenueAsync()
+    {
+        var invoices = await _invoiceRepo.GetAllAsync();
+        return invoices.Sum(i => i.FinalPrice);
+    }
+
+    public async Task<decimal> GetRevenueByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        var invoices = await _invoiceRepo.GetByDateRangeAsync(startDate, endDate);
+        return invoices.Sum(i => i.FinalPrice);
     }
 }

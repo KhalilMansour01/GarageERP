@@ -1,139 +1,103 @@
-﻿using GarageERP.Application.Interfaces;
-using GarageERP.Domain.Entities;
-using GarageERP.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 namespace GarageERP.Application.Services;
 
-public class JobService : IJobService
+public class JobService
 {
-    private readonly GarageDbContext _context;
+    private readonly IJobRepository _jobRepo;
+    private readonly IVehicleRepository _vehicleRepo;
+    private readonly IServiceRepository _serviceRepo;
 
-    public JobService(GarageDbContext context)
+    public JobService(
+        IJobRepository jobRepo,
+        IVehicleRepository vehicleRepo,
+        IServiceRepository serviceRepo)
     {
-        _context = context;
+        _jobRepo = jobRepo;
+        _vehicleRepo = vehicleRepo;
+        _serviceRepo = serviceRepo;
     }
 
-    // Basic CRUD
-    public async Task<IEnumerable<Job>> GetAllJobsAsync()
+    public async Task<Job> GetByIdAsync(int id)
     {
-        return await _context.Jobs
-            .Include(j => j.Vehicle)
-            .Include(j => j.Service)
-            .OrderByDescending(j => j.Date)
-            .ToListAsync();
-    }
-
-    public async Task<Job?> GetJobByIdAsync(int id)
-    {
-        return await _context.Jobs
-            .Include(j => j.Vehicle)
-                .ThenInclude(v => v.Customer)
-            .Include(j => j.Service)
-                .ThenInclude(s => s.PartsUsed)
-                    .ThenInclude(pu => pu.Part)
-            .Include(j => j.Invoices)
-            .FirstOrDefaultAsync(j => j.Id == id);
-    }
-
-    public async Task<Job> CreateJobAsync(Job job)
-    {
-        job.Date = DateTime.Now;
-        _context.Jobs.Add(job);
-        await _context.SaveChangesAsync();
+        var job = await _jobRepo.GetByIdAsync(id);
+        if (job == null)
+            throw new Exception("Job does not exist");
         return job;
     }
 
-    public async Task<Job> UpdateJobAsync(Job job)
+    public async Task<List<Job>> GetAllAsync()
     {
-        _context.Jobs.Update(job);
-        await _context.SaveChangesAsync();
-        return job;
+        return await _jobRepo.GetAllAsync();
     }
 
-    public async Task<bool> DeleteJobAsync(int id)
+    public async Task<List<Job>> GetByVehicleIdAsync(int vehicleId)
     {
-        var job = await _context.Jobs.FindAsync(id);
-        if (job == null) return false;
-
-        _context.Jobs.Remove(job);
-        await _context.SaveChangesAsync();
-        return true;
+        return await _jobRepo.GetByVehicleIdAsync(vehicleId);
     }
 
-    // Business Logic
-    public async Task<IEnumerable<Job>> GetJobsByVehicleIdAsync(int vehicleId)
+    public async Task<List<Job>> GetByServiceIdAsync(int serviceId)
     {
-        return await _context.Jobs
-            .Where(j => j.VehicleId == vehicleId)
-            .Include(j => j.Service)
-            .Include(j => j.Invoices)
-            .OrderByDescending(j => j.Date)
-            .ToListAsync();
+        return await _jobRepo.GetByServiceIdAsync(serviceId);
     }
 
-    public async Task<IEnumerable<Job>> GetJobsByServiceIdAsync(int serviceId)
+    public async Task<List<Job>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        return await _context.Jobs
-            .Where(j => j.ServiceId == serviceId)
-            .Include(j => j.Vehicle)
-                .ThenInclude(v => v.Customer)
-            .OrderByDescending(j => j.Date)
-            .ToListAsync();
+        return await _jobRepo.GetByDateRangeAsync(startDate, endDate);
     }
 
-    public async Task<IEnumerable<Job>> GetJobsByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public async Task<List<Job>> GetPendingAsync()
     {
-        return await _context.Jobs
-            .Where(j => j.Date >= startDate && j.Date <= endDate)
-            .Include(j => j.Vehicle)
-            .Include(j => j.Service)
-            .OrderByDescending(j => j.Date)
-            .ToListAsync();
+        return await _jobRepo.GetPendingAsync();
     }
 
-    public async Task<IEnumerable<Job>> GetPendingJobsAsync()
+    public async Task AddAsync(int vehicleId, int serviceId, decimal netCost)
     {
-        return await _context.Jobs
-            .Where(j => !j.Invoices.Any())
-            .Include(j => j.Vehicle)
-                .ThenInclude(v => v.Customer)
-            .Include(j => j.Service)
-            .OrderBy(j => j.Date)
-            .ToListAsync();
+        var vehicle = await _vehicleRepo.GetByIdAsync(vehicleId);
+        if (vehicle == null)
+            throw new Exception("Vehicle does not exist");
+
+        var service = await _serviceRepo.GetByIdAsync(serviceId);
+        if (service == null)
+            throw new Exception("Service does not exist");
+
+        if (netCost < 0)
+            throw new Exception("Net cost cannot be negative");
+
+        var job = new Job
+        {
+            VehicleId = vehicleId,
+            ServiceId = serviceId,
+            NetCost = netCost,
+            Date = DateTime.Now
+        };
+
+        await _jobRepo.AddAsync(job);
     }
 
-    public async Task<IEnumerable<Job>> GetCompletedJobsAsync()
+    public async Task UpdateAsync(Job job)
     {
-        return await _context.Jobs
-            .Where(j => j.Invoices.Any())
-            .Include(j => j.Vehicle)
-            .Include(j => j.Service)
-            .Include(j => j.Invoices)
-            .OrderByDescending(j => j.Date)
-            .ToListAsync();
+        var existing = await GetByIdAsync(job.Id);
+
+        if (job.NetCost < 0)
+            throw new Exception("Net cost cannot be negative");
+
+        existing.NetCost = job.NetCost;
+        existing.Date = job.Date;
+
+        await _jobRepo.UpdateAsync(existing);
     }
 
-    public async Task<decimal> CalculateJobTotalCostAsync(int jobId)
+    public async Task DeleteAsync(int id)
     {
-        var job = await _context.Jobs
-            .Include(j => j.Service)
-                .ThenInclude(s => s.PartsUsed)
-                    .ThenInclude(pu => pu.Part)
-            .FirstOrDefaultAsync(j => j.Id == jobId);
-
-        if (job == null) return 0;
-
-        decimal serviceCost = job.Service?.Cost ?? 0;
-        decimal partsCost = job.Service?.PartsUsed.Sum(pu => pu.Part?.PriceSingle ?? 0) ?? 0;
-
-        return serviceCost + partsCost;
+        await GetByIdAsync(id);
+        await _jobRepo.DeleteAsync(id);
     }
 
     public async Task<decimal> GetTotalRevenueByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        return await _context.Jobs
-            .Where(j => j.Date >= startDate && j.Date <= endDate)
-            .SumAsync(j => j.NetCost);
+        var jobs = await _jobRepo.GetByDateRangeAsync(startDate, endDate);
+        return jobs.Sum(j => j.NetCost);
     }
 }

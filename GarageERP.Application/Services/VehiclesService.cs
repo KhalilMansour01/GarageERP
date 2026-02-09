@@ -1,6 +1,8 @@
 ﻿using GarageERP.Domain.Entities;
 using GarageERP.Application.Interfaces;
 
+namespace GarageERP.Application.Services;
+
 public class VehicleService
 {
     private readonly IVehicleRepository _vehicleRepo;

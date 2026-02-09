@@ -1,90 +1,64 @@
-﻿using GarageERP.Application.Interfaces;
-using GarageERP.Domain.Entities;
-using GarageERP.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Numerics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 namespace GarageERP.Application.Services;
 
-public class SupplierService : ISupplierService
+public class SupplierService
 {
-    private readonly GarageDbContext _context;
+    private readonly ISupplierRepository _supplierRepo;
 
-    public SupplierService(GarageDbContext context)
+    public SupplierService(ISupplierRepository supplierRepo)
     {
-        _context = context;
+        _supplierRepo = supplierRepo;
     }
 
-    // Basic CRUD
-    public async Task<IEnumerable<Supplier>> GetAllSuppliersAsync()
+    public async Task<Supplier> GetByIdAsync(int id)
     {
-        return await _context.Suppliers
-            .OrderBy(s => s.Name)
-            .ToListAsync();
-    }
-
-    public async Task<Supplier?> GetSupplierByIdAsync(int id)
-    {
-        return await _context.Suppliers
-            .FirstOrDefaultAsync(s => s.Id == id);
-    }
-
-    public async Task<Supplier> CreateSupplierAsync(Supplier supplier)
-    {
-        _context.Suppliers.Add(supplier);
-        await _context.SaveChangesAsync();
+        var supplier = await _supplierRepo.GetByIdAsync(id);
+        if (supplier == null)
+            throw new Exception("Supplier does not exist");
         return supplier;
     }
 
-    public async Task<Supplier> UpdateSupplierAsync(Supplier supplier)
+    public async Task<List<Supplier>> GetAllAsync()
     {
-        _context.Suppliers.Update(supplier);
-        await _context.SaveChangesAsync();
-        return supplier;
+        return await _supplierRepo.GetAllAsync();
     }
 
-    public async Task<bool> DeleteSupplierAsync(int id)
+    public async Task<List<Supplier>> SearchByNameAsync(string name)
     {
-        var supplier = await _context.Suppliers.FindAsync(id);
-        if (supplier == null) return false;
-
-        // Check if supplier has parts
-        var hasParts = await _context.Parts.AnyAsync(p => p.SupplierId == id);
-        if (hasParts)
-            return false; // Cannot delete supplier with existing parts
-
-        _context.Suppliers.Remove(supplier);
-        await _context.SaveChangesAsync();
-        return true;
+        if (string.IsNullOrWhiteSpace(name))
+            throw new Exception("Search name cannot be empty");
+        return await _supplierRepo.SearchByNameAsync(name);
     }
 
-    // Business Logic
-    public async Task<Supplier?> GetSupplierWithPartsAsync(int id)
+    public async Task AddAsync(string name, string address)
     {
-        return await _context.Suppliers
-            .Include(s => s.Parts)
-            .FirstOrDefaultAsync(s => s.Id == id);
+        if (string.IsNullOrWhiteSpace(name))
+            throw new Exception("Supplier name is required");
+
+        var supplier = new Supplier
+        {
+            Name = name.Trim(),
+            Address = address?.Trim() ?? ""
+        };
+
+        await _supplierRepo.AddAsync(supplier);
     }
 
-    public async Task<IEnumerable<Supplier>> SearchSuppliersByNameAsync(string name)
+    public async Task UpdateAsync(Supplier supplier)
     {
-        return await _context.Suppliers
-            .Where(s => s.Name.Contains(name))
-            .OrderBy(s => s.Name)
-            .ToListAsync();
+        var existing = await GetByIdAsync(supplier.Id);
+
+        existing.Name = supplier.Name?.Trim() ?? throw new Exception("Name is required");
+        existing.Address = supplier.Address?.Trim() ?? "";
+
+        await _supplierRepo.UpdateAsync(existing);
     }
 
-    public async Task<int> GetPartCountBySupplierAsync(int supplierId)
+    public async Task DeleteAsync(int id)
     {
-        return await _context.Parts
-            .CountAsync(p => p.SupplierId == supplierId);
-    }
-
-    public async Task<decimal> GetTotalInventoryValueBySupplierAsync(int supplierId)
-    {
-        return await _context.Parts
-            .Where(p => p.SupplierId == supplierId)
-            .SumAsync(p => p.Inventory * p.BuyPrice);
+        await GetByIdAsync(id);
+        await _supplierRepo.DeleteAsync(id);
     }
 }

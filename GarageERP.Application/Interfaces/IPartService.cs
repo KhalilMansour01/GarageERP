@@ -1,23 +1,16 @@
-﻿using GarageERP.Domain.Entities;
+﻿namespace GarageERP.Application.Interfaces;
 
-namespace GarageERP.Application.Interfaces;
+using GarageERP.Domain.Entities;
 
-public interface IPartService
+public interface IPartRepository
 {
-    // Basic CRUD
-    Task<IEnumerable<Part>> GetAllPartsAsync();
-    Task<Part?> GetPartByIdAsync(int id);
-    Task<Part> CreatePartAsync(Part part);
-    Task<Part> UpdatePartAsync(Part part);
-    Task<bool> DeletePartAsync(int id);
-
-    // Inventory Management
-    Task<IEnumerable<Part>> GetPartsBySupplierId(int supplierId);
-    Task<IEnumerable<Part>> GetLowStockPartsAsync(int threshold = 10);
-    Task<IEnumerable<Part>> GetOutOfStockPartsAsync();
-    Task<bool> UpdateInventoryAsync(int partId, int quantity);
-    Task<bool> AddStockAsync(int partId, int quantity);
-    Task<bool> RemoveStockAsync(int partId, int quantity);
-    Task<decimal> GetPartProfitMarginAsync(int partId);
-    Task<IEnumerable<Part>> SearchPartsByNameAsync(string name);
+    Task<Part?> GetByIdAsync(int id);
+    Task<List<Part>> GetAllAsync();
+    Task<List<Part>> GetBySupplierIdAsync(int supplierId);
+    Task<List<Part>> SearchByNameAsync(string name);
+    Task<List<Part>> GetLowStockAsync(int threshold);
+    Task<List<Part>> GetOutOfStockAsync();
+    Task AddAsync(Part part);
+    Task UpdateAsync(Part part);
+    Task DeleteAsync(int id);
 }

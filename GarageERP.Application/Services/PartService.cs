@@ -1,136 +1,124 @@
-﻿using GarageERP.Application.Interfaces;
-using GarageERP.Domain.Entities;
-using GarageERP.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using GarageERP.Domain.Entities;
+using GarageERP.Application.Interfaces;
 
 namespace GarageERP.Application.Services;
 
-public class PartService : IPartService
+public class PartService
 {
-    private readonly GarageDbContext _context;
+    private readonly IPartRepository _partRepo;
+    private readonly ISupplierRepository _supplierRepo;
 
-    public PartService(GarageDbContext context)
+    public PartService(
+        IPartRepository partRepo,
+        ISupplierRepository supplierRepo)
     {
-        _context = context;
+        _partRepo = partRepo;
+        _supplierRepo = supplierRepo;
     }
 
-    // Basic CRUD
-    public async Task<IEnumerable<Part>> GetAllPartsAsync()
+    public async Task<Part> GetByIdAsync(int id)
     {
-        return await _context.Parts
-            .Include(p => p.Supplier)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-    }
-
-    public async Task<Part?> GetPartByIdAsync(int id)
-    {
-        return await _context.Parts
-            .Include(p => p.Supplier)
-            .Include(p => p.PartsUsed)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    public async Task<Part> CreatePartAsync(Part part)
-    {
-        _context.Parts.Add(part);
-        await _context.SaveChangesAsync();
+        var part = await _partRepo.GetByIdAsync(id);
+        if (part == null)
+            throw new Exception("Part does not exist");
         return part;
     }
 
-    public async Task<Part> UpdatePartAsync(Part part)
+    public async Task<List<Part>> GetAllAsync()
     {
-        _context.Parts.Update(part);
-        await _context.SaveChangesAsync();
-        return part;
+        return await _partRepo.GetAllAsync();
     }
 
-    public async Task<bool> DeletePartAsync(int id)
+    public async Task<List<Part>> GetBySupplierIdAsync(int supplierId)
     {
-        var part = await _context.Parts.FindAsync(id);
-        if (part == null) return false;
-
-        _context.Parts.Remove(part);
-        await _context.SaveChangesAsync();
-        return true;
+        return await _partRepo.GetBySupplierIdAsync(supplierId);
     }
 
-    // Inventory Management
-    public async Task<IEnumerable<Part>> GetPartsBySupplierId(int supplierId)
+    public async Task<List<Part>> SearchByNameAsync(string name)
     {
-        return await _context.Parts
-            .Where(p => p.SupplierId == supplierId)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new Exception("Search name cannot be empty");
+        return await _partRepo.SearchByNameAsync(name);
     }
 
-    public async Task<IEnumerable<Part>> GetLowStockPartsAsync(int threshold = 10)
+    public async Task<List<Part>> GetLowStockAsync(int threshold = 10)
     {
-        return await _context.Parts
-            .Include(p => p.Supplier)
-            .Where(p => p.Inventory > 0 && p.Inventory <= threshold)
-            .OrderBy(p => p.Inventory)
-            .ToListAsync();
+        return await _partRepo.GetLowStockAsync(threshold);
     }
 
-    public async Task<IEnumerable<Part>> GetOutOfStockPartsAsync()
+    public async Task<List<Part>> GetOutOfStockAsync()
     {
-        return await _context.Parts
-            .Include(p => p.Supplier)
-            .Where(p => p.Inventory == 0)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
+        return await _partRepo.GetOutOfStockAsync();
     }
 
-    public async Task<bool> UpdateInventoryAsync(int partId, int quantity)
+    public async Task AddAsync(Part part)
     {
-        var part = await _context.Parts.FindAsync(partId);
-        if (part == null) return false;
+        if (string.IsNullOrWhiteSpace(part.Name))
+            throw new Exception("Part name is required");
 
-        part.Inventory = quantity;
-        await _context.SaveChangesAsync();
-        return true;
+        if (part.SupplierId <= 0)
+            throw new Exception("Supplier ID is required");
+
+        var supplier = await _supplierRepo.GetByIdAsync(part.SupplierId);
+        if (supplier == null)
+            throw new Exception("Supplier does not exist");
+
+        if (part.PriceSingle < 0 || part.PriceBulk < 0 || part.BuyPrice < 0)
+            throw new Exception("Prices cannot be negative");
+
+        await _partRepo.AddAsync(part);
     }
 
-    public async Task<bool> AddStockAsync(int partId, int quantity)
+    public async Task UpdateAsync(Part part)
     {
-        var part = await _context.Parts.FindAsync(partId);
-        if (part == null) return false;
+        var existing = await GetByIdAsync(part.Id);
 
+        if (part.PriceSingle < 0 || part.PriceBulk < 0 || part.BuyPrice < 0)
+            throw new Exception("Prices cannot be negative");
+
+        existing.Name = part.Name?.Trim() ?? throw new Exception("Name is required");
+        existing.PriceSingle = part.PriceSingle;
+        existing.PriceBulk = part.PriceBulk;
+        existing.BuyPrice = part.BuyPrice;
+        existing.Inventory = part.Inventory;
+        existing.SupplierId = part.SupplierId;
+
+        await _partRepo.UpdateAsync(existing);
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        await GetByIdAsync(id);
+        await _partRepo.DeleteAsync(id);
+    }
+
+    public async Task AddStockAsync(int partId, int quantity)
+    {
+        if (quantity <= 0)
+            throw new Exception("Quantity must be positive");
+
+        var part = await GetByIdAsync(partId);
         part.Inventory += quantity;
-        await _context.SaveChangesAsync();
-        return true;
+        await _partRepo.UpdateAsync(part);
     }
 
-    public async Task<bool> RemoveStockAsync(int partId, int quantity)
+    public async Task RemoveStockAsync(int partId, int quantity)
     {
-        var part = await _context.Parts.FindAsync(partId);
-        if (part == null) return false;
+        if (quantity <= 0)
+            throw new Exception("Quantity must be positive");
 
-        if (part.Inventory < quantity) return false;
+        var part = await GetByIdAsync(partId);
+
+        if (part.Inventory < quantity)
+            throw new Exception("Insufficient stock");
 
         part.Inventory -= quantity;
-        await _context.SaveChangesAsync();
-        return true;
+        await _partRepo.UpdateAsync(part);
     }
 
-    public async Task<decimal> GetPartProfitMarginAsync(int partId)
+    public decimal GetProfitMargin(Part part)
     {
-        var part = await _context.Parts.FindAsync(partId);
-        if (part == null) return 0;
-
         if (part.BuyPrice == 0) return 0;
-
-        var profitMargin = ((part.PriceSingle - part.BuyPrice) / part.BuyPrice) * 100;
-        return profitMargin;
-    }
-
-    public async Task<IEnumerable<Part>> SearchPartsByNameAsync(string name)
-    {
-        return await _context.Parts
-            .Include(p => p.Supplier)
-            .Where(p => p.Name.Contains(name))
-            .OrderBy(p => p.Name)
-            .ToListAsync();
+        return ((part.PriceSingle - part.BuyPrice) / part.BuyPrice) * 100;
     }
 }

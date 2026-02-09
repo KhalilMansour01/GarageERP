@@ -13,5 +13,5 @@ public class Customer
     public string Email { get; set; } = "";
     public decimal Balance { get; set; } = 0m;
     public bool isActive { get; set; } = true;
-    // public List<Vehicle> Vehicles { get; set; } = new();
+    public List<Vehicle> Vehicles { get; set; } = new();
 }

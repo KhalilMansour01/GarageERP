@@ -1,6 +1,7 @@
 ﻿using GarageERP.Domain.Entities;
 using GarageERP.Application.Interfaces;
 
+namespace GarageERP.Application.Services;
 
 public class CustomerService
 {

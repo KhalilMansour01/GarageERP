@@ -22,7 +22,7 @@ public class Vehicle
     public int Odometer { get; set; }
     public string Color { get; set; } = "";
     public string Shape { get; set; } = "";
-    public int TrunkChar { get; set; } // unclear, keeping as int
+    public int TrunkChar { get; set; } 
     public string EnginePower { get; set; } = "";
     public int Cylinders { get; set; }
     public int SeatsNum { get; set; }
@@ -30,8 +30,7 @@ public class Vehicle
     public int EmptyWeight { get; set; }
     public int CargoWeight { get; set; }
     public int TotalWeight { get; set; }
-
-    // public Customer? Customer { get; set; }
-    // public List<Contract> Contracts { get; set; } = new();
-    // public List<Job> Jobs { get; set; } = new();
+    public Customer? Customer { get; set; }
+    public List<Contract> Contracts { get; set; } = new();
+    public List<Job> Jobs { get; set; } = new();
 }
